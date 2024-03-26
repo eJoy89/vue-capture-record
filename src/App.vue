@@ -8,12 +8,31 @@
       <img src="@/git.gif" alt="" ref="videoElement">
     </div> -->
     <video ref="videoElement" src="@/video22.mp4" controls autoplay></video>
+    <button @click="togglePlay">Pause / Unpause</button>
+
+    <youtube-iframe ref="player" @ready="onReady" style="width: 450px; height: 300px;"></youtube-iframe>
+
   </div>
 </template>
 
-<script>
+
+<script setup>
+import { usePlayer } from '@vue-youtube/core';
+import { ref } from 'vue';
 import html2canvas from 'html2canvas';
 
+const player =ref();
+
+const { togglePlay } = usePlayer('JM88m7SY8FE', player)
+
+const onReady = ((event) => {
+  event.target.playVideo();
+})
+
+</script>
+
+
+<script>
 
 export default {
   data() {
