@@ -27,8 +27,8 @@ export default {
   methods: {
     async saveScreenshot() {
         try {
-            const canvas = await html2canvas(document.body);
-            const image = canvas.toDataURL("image/png");
+            const canvas = await html2canvas(this.$refs.videoElement);
+            const image = canvas.toDataURL("image/jpg");
             const link = document.createElement('a');
             link.href = image;
             link.download = 'screenshot.png';
