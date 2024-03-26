@@ -2,8 +2,11 @@
   <div>
     <button @click="startRecording" :disabled="recording">시작</button>
     <button @click="stopRecording" :disabled="!recording">종료</button>
-
+{{ chunks }}
     <button @click="saveScreenshot">화면 캡쳐</button>
+    <!-- <div>
+      <img src="@/git.gif" alt="" ref="videoElement">
+    </div> -->
     <video ref="videoElement" src="@/video22.mp4" controls autoplay></video>
   </div>
 </template>
@@ -42,6 +45,7 @@ export default {
 
         this.recorder = new MediaRecorder(video.captureStream());
         this.chunks = [];
+        console.log(this.chunks)
 
         this.recorder.ondataavailable = (e) => {
           this.chunks.push(e.data);
