@@ -4,6 +4,10 @@
     <button @click="stopRecording" :disabled="!recording">종료</button>
     {{ chunks }}
     <button @click="saveScreenshot">화면 캡쳐</button>
+
+    <div v-if="time !== 0">
+      {{ formatTime(time) }}
+    </div>
     <!-- <div>
       <img src="@/git.gif" alt="" ref="videoElement">
     </div> -->
@@ -25,12 +29,24 @@ const recording = ref(false);
 const video = ref();
 const recorder = ref(null);
 const chunks = ref([]);
+const time = ref(0);
+let timer = null;
 
 const { togglePlay } = usePlayer('JM88m7SY8FE', player);
 
 const onReady = ((event) => {
   event.target.playVideo();
 });
+
+function formatTime(seconds) {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  const formattedHrs = String(hrs).padStart(2, '0');
+  const formattedMins = String(mins).padStart(2, '0');
+  const formattedSecs = String(secs).padStart(2, '0');
+  return `${formattedHrs}:${formattedMins}:${formattedSecs}`;
+}
 
 async function saveScreenshot() {
     try {
@@ -45,17 +61,24 @@ async function saveScreenshot() {
     }
 }
 
-async function startRecording() {
+function startRecording() {
   try {
     const vid = video.value.$el || video.value;
     recorder.value = new MediaRecorder(vid.captureStream());
     chunks.value = [];
+    //추가
+    time.value = 0;
+    timer = setInterval(() => {
+      time.value++;
+    }, 1000);
 
     recorder.value.ondataavailable = (e) => {
       chunks.value.push(e.data);
     };
 
     recorder.value.onstop = async () => {
+      // 추가
+      clearInterval(timer);
       const blob = new Blob(chunks.value, { type: 'video/webm' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -77,6 +100,10 @@ async function startRecording() {
 function stopRecording() {
   if (recorder.value && recording.value) {
     recording.value = false;
+    // 추가
+    clearInterval(timer);
+    time.value = 0
+    
     recorder.value.stop();
   }
 }
