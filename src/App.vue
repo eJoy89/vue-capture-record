@@ -70,7 +70,7 @@ function onResult (data) {
 function startRecording() {
   try {
     const vid = video.value.$el || video.value;
-    const options = { mimeType: 'video/webm; codecs=vp9,opus' }; 
+    const options = { mimeType: 'video/webm; codecs=pcm,opus' }; 
     recorder.value = new MediaRecorder(vid.captureStream(), options);
     chunks.value = [];
     // Start the timer
@@ -88,7 +88,7 @@ function startRecording() {
       clearInterval(timer);
       
       // Combine the chunks into a single Blob
-      const blob = new Blob(chunks.value, { type: 'video/webm' });
+      const blob = new Blob(chunks.value, { mimeType: 'video/webm; codecs=pcm,opus' });
 
       // Create a URL for the Blob
       const url = window.URL.createObjectURL(blob);
