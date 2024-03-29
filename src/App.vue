@@ -11,10 +11,10 @@
     <!-- <div>
       <img src="@/git.gif" alt="" ref="videoElement">
     </div> -->
-    <video ref="video" src="@/video22.mp4" controls autoplay></video>
+    <video ref="video" src="@/DASH.mp4" controls autoplay style="width: 200px; height: 180px;"></video>
     <button @click="togglePlay">Pause / Unpause</button>
 
-    <youtube-iframe ref="player" @ready="onReady" style="width: 450px; height: 300px;"></youtube-iframe>
+    <youtube-iframe ref="player" @ready="onReady" style="width: 0; height: 0;"></youtube-iframe>
 
   </div>
 </template>
@@ -73,18 +73,19 @@ function startRecording() {
     }, 1000);
 
     recorder.value.ondataavailable = (e) => {
+      console.log(e.data)
       chunks.value.push(e.data);
     };
 
     recorder.value.onstop = async () => {
       // 추가
       clearInterval(timer);
-      const blob = new Blob(chunks.value, { type: 'video/webm' });
+      const blob = new Blob(chunks.value, { type: 'video/mp4' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = 'captured_video.webm';
+      a.download = 'captured_video.mp4';
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
