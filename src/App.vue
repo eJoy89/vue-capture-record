@@ -1,6 +1,6 @@
 <template>
   <div>
-    <button @click="startRecording" :disabled="recording">시작</button>
+    <button @click="startRecording" :disabled="recording" @result="onResult" >시작</button>
     <button @click="stopRecording" :disabled="!recording">종료</button>
     {{ chunks }}
     <button @click="saveScreenshot">화면 캡쳐</button>
@@ -11,10 +11,14 @@
     <!-- <div>
       <img src="@/git.gif" alt="" ref="videoElement">
     </div> -->
-    <video ref="video" src="@/DASH.mp4" controls autoplay style="width: 200px; height: 180px;"></video>
+    <video ref="video" src="@/DASH.mp4" controls autoplay style="width: 400px; height: 280px;"></video>
     <button @click="togglePlay">Pause / Unpause</button>
 
     <youtube-iframe ref="player" @ready="onReady" style="width: 0; height: 0;"></youtube-iframe>
+
+
+    
+    <!-- <vue-record-video /> -->
 
   </div>
 </template>
@@ -34,9 +38,6 @@ let timer = null;
 
 const { togglePlay } = usePlayer('JM88m7SY8FE', player);
 
-const onReady = ((event) => {
-  event.target.playVideo();
-});
 
 function formatTime(seconds) {
   const hrs = Math.floor(seconds / 3600);
@@ -61,33 +62,49 @@ async function saveScreenshot() {
     }
 }
 
+function onResult (data) {
+  console.log('The blob data:', data);
+  console.log('Downloadable video', window.URL.createObjectURL(data));
+}
+
 function startRecording() {
   try {
     const vid = video.value.$el || video.value;
-    recorder.value = new MediaRecorder(vid.captureStream());
+    const options = { mimeType: 'video/webm; codecs=vp9,opus' }; 
+    recorder.value = new MediaRecorder(vid.captureStream(), options);
     chunks.value = [];
-    //추가
+    // Start the timer
     time.value = 0;
     timer = setInterval(() => {
       time.value++;
     }, 1000);
 
     recorder.value.ondataavailable = (e) => {
-      console.log(e.data)
       chunks.value.push(e.data);
     };
 
     recorder.value.onstop = async () => {
-      // 추가
+      // Clear the timer
       clearInterval(timer);
-      const blob = new Blob(chunks.value, { type: 'video/mp4' });
+      
+      // Combine the chunks into a single Blob
+      const blob = new Blob(chunks.value, { type: 'video/webm' });
+
+      // Create a URL for the Blob
       const url = window.URL.createObjectURL(blob);
+
+      // Create a link element to trigger download
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = 'captured_video.mp4';
+      a.download = 'captured_video.webm';
       document.body.appendChild(a);
+
+      // Trigger the download
       a.click();
+
+      // Clean up
+      document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     };
 
