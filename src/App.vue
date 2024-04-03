@@ -1,10 +1,21 @@
 <template>
+    <div style="width: 200px; height: 300px; border: 1px solid red; overflow: scroll;">
+      <div style="width: 200px; height: 600px; background-color: lightcoral;"></div>
+    </div>
+  
+  
   <div>
     <button @click="startRecording" :disabled="recording" @result="onResult" >시작</button>
     <button @click="stopRecording" :disabled="!recording">종료</button>
     {{ chunks }}
     <button @click="saveScreenshot">화면 캡쳐</button>
 
+
+
+
+
+    <video src="@/captured_video (2).mp4" style="width: 300px; height: 300px; border: 1px solid black;" controls autoplay></video>
+    {{ recording1 }}
     <div v-if="time !== 0">
       {{ formatTime(time) }}
     </div>
@@ -35,6 +46,8 @@ const recorder = ref(null);
 const chunks = ref([]);
 const time = ref(0);
 let timer = null;
+
+let recording1 = ref(null);
 
 const { togglePlay } = usePlayer('JM88m7SY8FE', player);
 
@@ -70,7 +83,7 @@ function onResult (data) {
 function startRecording() {
   try {
     const vid = video.value.$el || video.value;
-    const options = { mimeType: 'video/webm; codecs=pcm,opus' }; 
+    const options = { mimeType: 'video/webm' }; 
     recorder.value = new MediaRecorder(vid.captureStream(), options);
     chunks.value = [];
     // Start the timer
@@ -80,6 +93,7 @@ function startRecording() {
     }, 1000);
 
     recorder.value.ondataavailable = (e) => {
+      console.log(e)
       chunks.value.push(e.data);
     };
 
@@ -88,21 +102,24 @@ function startRecording() {
       clearInterval(timer);
       
       // Combine the chunks into a single Blob
-      const blob = new Blob(chunks.value, { mimeType: 'video/webm; codecs=pcm,opus' });
+      const blob = new Blob(chunks.value, { mimeType: 'video/webm' });
 
       // Create a URL for the Blob
       const url = window.URL.createObjectURL(blob);
+      recording1.value = url;
+
+      console.log(`여기++ ${url}`)
 
       // Create a link element to trigger download
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = 'captured_video.webm';
+      a.download = 'captured_video.mp4';
+      recording1 = url
+      // console.log(a)
       document.body.appendChild(a);
-
       // Trigger the download
       a.click();
-
       // Clean up
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
