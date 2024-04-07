@@ -2,6 +2,7 @@
   <div>
     <input type="file" ref="inputV" @change="updateInputValue">
     <video v-if="inputValue" :src="inputValue" controls autoplay style="width: 300px; height: 270px; "></video>
+    {{ inputValue }}
   </div>
 </template>
 
