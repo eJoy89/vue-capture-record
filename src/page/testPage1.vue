@@ -11,6 +11,8 @@
         </div>
     </div>
     
+    <button>git</button>
+
     <button @click="bakery">빵집</button>
     </div>
 </template>
