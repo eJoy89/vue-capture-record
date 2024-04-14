@@ -13,6 +13,9 @@ export default {
       inputValue: null,
     };
   },
+  mounted() {
+    console.log('git')
+  },
   methods: {
     updateInputValue(event) {
       if (event.target.files.length > 0) {
