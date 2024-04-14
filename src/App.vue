@@ -14,7 +14,7 @@ export default {
     };
   },
   mounted() {
-    console.log('git')
+    window.scrollTo(0, 0)
   },
   methods: {
     updateInputValue(event) {
