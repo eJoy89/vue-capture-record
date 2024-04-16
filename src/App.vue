@@ -5,6 +5,9 @@
     {{ inputValue }}
     {{ 'hotspot' }}
   </div>
+  <button @click="() => { this.showBox = !this.showBox }">show box inner fn</button>
+
+  <div style="width: 200px; height: 200px; background: lawngreen;" v-if="showBox"></div>
 </template>
 
 <script>
@@ -12,6 +15,7 @@ export default {
   data() {
     return {
       inputValue: null,
+      showBox: true,
     };
   },
   mounted() {

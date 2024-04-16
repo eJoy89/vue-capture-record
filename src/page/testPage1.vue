@@ -5,7 +5,8 @@
         <div v-for="(list, index) in this.responseData" :key="list" :index="index">
             <div v-for="(item, index) in list.dailyBoxOfficeList" :key="item" :index="index">
                 {{ item.movieNm }}
-                //
+                ////
+                {{ 'fixed' }}
                 {{ item.audiCnt }}
             </div>
         </div>
