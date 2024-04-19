@@ -5,12 +5,15 @@
         <div v-for="(list, index) in this.responseData" :key="list" :index="index">
             <div v-for="(item, index) in list.dailyBoxOfficeList" :key="item" :index="index">
                 {{ item.movieNm }}
-                //
+                ////
+                {{ 'fixed' }}
                 {{ item.audiCnt }}
             </div>
         </div>
     </div>
     
+    <button>git</button>
+
     <button @click="bakery">빵집</button>
     </div>
 </template>
