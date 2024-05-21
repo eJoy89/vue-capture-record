@@ -11,8 +11,11 @@
     "@vue-youtube/component": "^0.0.6",
     "@vue-youtube/core": "^0.0.6",
     "axios": "^1.6.8",
+    "chromedriver": "^125.0.0",
     "core-js": "^3.8.3",
+    "geckodriver": "^4.4.0",
     "html2canvas": "^1.4.1",
+    "selenium-webdriver": "^4.21.0",
     "vue": "^3.2.13",
     "vue-carousel": "^0.18.0",
     "vue3-carousel": "^0.3.3"
