@@ -1,0 +1,87 @@
+<template>
+  <div>
+    <video ref="videoElement" style="transform: scaleX(-1);" autoplay></video>
+    <button @click="startCamera">카메라 시작</button>
+    <button @click="startRecording">녹음 시작</button>
+    <button @click="stopRecording">녹음 종료</button>
+    <audio ref="audioElement" controls></audio>
+  </div>
+</template>
+
+<script>
+import { ref } from 'vue';
+
+export default {
+  name: "CameraControl",
+  setup() {
+    const videoElement = ref(null);
+    const audioElement = ref(null);
+    let mediaRecorder;
+    let audioChunks = [];
+
+    const startCamera = () => {
+      if (navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(function(stream) {
+            if (videoElement.value) {
+              videoElement.value.srcObject = stream;
+              console.log("카메라 스트림이 시작되었습니다."); 
+              videoElement.value.onloadeddata = () => {
+                console.log('비디오 데이터가 로드되었습니다.');
+              };
+            }
+          })
+          .catch(function(error) {
+            console.log("카메라 접근에 실패했습니다:", error);
+          });
+      } else {
+        console.error("브라우저가 카메라 기능을 지원하지 않습니다.");
+      }
+    };
+
+    const startRecording = () => {
+      if (navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(function(stream) {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = function(event) {
+              audioChunks.push(event.data);
+            };
+            mediaRecorder.onstop = function() {
+              const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+              const audioUrl = URL.createObjectURL(audioBlob);
+              audioElement.value.src = audioUrl;
+              audioChunks = [];
+            };
+            mediaRecorder.start();
+            console.log("녹음이 시작되었습니다.");
+          })
+          .catch(function(error) {
+            console.log("오디오 접근에 실패했습니다:", error);
+          });
+      } else {
+        console.error("브라우저가 오디오 기능을 지원하지 않습니다.");
+      }
+    };
+
+    const stopRecording = () => {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        console.log("녹음이 종료되었습니다.");
+      }
+    };
+
+    return {
+      videoElement,
+      audioElement,
+      startCamera,
+      startRecording,
+      stopRecording
+    };
+  },
+  methods: {}
+};
+</script>
+
+<style>
+</style>
