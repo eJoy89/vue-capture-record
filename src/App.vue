@@ -1,58 +1,41 @@
 <template>
-  <div>
-    <button @click="toggleCamera">{{ isCameraActive ? '카메라 종료' : '카메라 시작' }}</button>
-    <button @click="toggleRecording">{{ isRecording ? '녹음 중지' : '녹음 시작' }}</button>
-    <button @click="toggleVideoRecording">{{ isVideoRecording ? '녹화 중지' : '녹화 시작' }}</button>
-    <button @click="toggleMusicRecording">{{ isMusicRecording ? '뮤직 녹음 중지' : '뮤직 녹음 시작' }}</button>
-    <div v-if="isCameraActive">
-      <video ref="video" width="640" height="480" autoplay></video>
+  <section style="display: flex; column-gap: 120px; padding: 90px;">
+    <div style="width: 300px; height: 300px; border: 1px solid black;">
+      <video ref="videoPlayback" src="@/assets/videoplayback.mp4" autoplay controls></video>
     </div>
-    <div style="padding-top: 100px;">
-      <video ref="music" src="@/assets/videoplayback.mp4" controls></video>
+
+    <div style="width: 300px; height: 300px; border: 1px solid red; display: flex; flex-direction: column; justify-content: space-between;">
+      <video ref="cameraVideo" autoplay></video>
+      <div style="width: 100%; display: flex;">
+        <button style="width: 50%;" @click="startCamera">카메라</button>
+        <button style="width: 50%;" @click="toggleRecording">{{ isRecording ? '녹음 중지' : '녹음' }}</button>
+      </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script>
 export default {
   data() {
     return {
-      isCameraActive: false,
-      isRecording: false,
-      isVideoRecording: false,
-      isMusicRecording: false,
       mediaRecorder: null,
-      recordedChunks: [],
-      combinedStream: null,
-      musicStream: null,
-      audioStream: null,
+      audioChunks: [],
+      isRecording: false,
+      audioContext: null,
+      microphoneStream: null,
+      videoAudioStream: null,
     };
   },
   methods: {
-    async toggleCamera() {
-      if (this.isCameraActive) {
-        this.stopCamera();
-      } else {
-        await this.startCamera();
-      }
-    },
     async startCamera() {
-      this.isCameraActive = true;
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        this.$refs.video.srcObject = stream;
-      } catch (err) {
-        console.error("Error accessing camera: ", err);
+        this.$refs.cameraVideo.srcObject = stream;
+      } catch (error) {
+        console.error('Error accessing the camera', error);
       }
     },
-    stopCamera() {
-      this.isCameraActive = false;
-      const stream = this.$refs.video.srcObject;
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    },
-    toggleRecording() {
+    async toggleRecording() {
       if (this.isRecording) {
         this.stopRecording();
       } else {
@@ -60,90 +43,60 @@ export default {
       }
     },
     async startRecording() {
-      this.isRecording = true;
-      this.recordedChunks = [];
       try {
-        const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        this.combinedStream = new MediaStream([...this.$refs.video.srcObject.getTracks(), ...audioStream.getTracks()]);
+        const microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        this.microphoneStream = microphoneStream;
 
-        this.mediaRecorder = new MediaRecorder(this.combinedStream);
-        this.mediaRecorder.ondataavailable = event => {
-          if (event.data.size > 0) {
-            this.recordedChunks.push(event.data);
-          }
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        const videoElement = this.$refs.videoPlayback;
+        const videoAudioSource = this.audioContext.createMediaElementSource(videoElement);
+        this.videoAudioStream = this.audioContext.createMediaStreamDestination();
+
+        const microphoneSource = this.audioContext.createMediaStreamSource(microphoneStream);
+        const mixedOutput = this.audioContext.createMediaStreamDestination();
+
+        videoAudioSource.connect(mixedOutput);
+        microphoneSource.connect(mixedOutput);
+
+        this.mediaRecorder = new MediaRecorder(mixedOutput.stream);
+        this.mediaRecorder.ondataavailable = (event) => {
+          this.audioChunks.push(event.data);
         };
         this.mediaRecorder.onstop = this.saveRecording;
         this.mediaRecorder.start();
-      } catch (err) {
-        console.error("Error accessing microphone: ", err);
+        this.isRecording = true;
+      } catch (error) {
+        console.error('Error accessing the microphone or video audio', error);
       }
     },
     stopRecording() {
+      this.mediaRecorder.stop();
       this.isRecording = false;
-      if (this.mediaRecorder) {
-        this.mediaRecorder.stop();
-      }
     },
     saveRecording() {
-      const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = 'recording.webm';
-      document.body.appendChild(a);
-      a.click();
-      URL.revokeObjectURL(url);
+      const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const link = document.createElement('a');
+      link.href = audioUrl;
+      link.download = 'recording.wav';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      this.audioChunks = [];
+      this.cleanup();
     },
-    toggleVideoRecording() {
-      this.toggleRecording();
-      this.isVideoRecording = !this.isVideoRecording;
-    },
-    toggleMusicRecording() {
-      if (this.isMusicRecording) {
-        this.stopMusicRecording();
-      } else {
-        this.startMusicRecording();
+    cleanup() {
+      if (this.microphoneStream) {
+        this.microphoneStream.getTracks().forEach(track => track.stop());
       }
-    },
-    async startMusicRecording() {
-      this.isMusicRecording = true;
-      this.recordedChunks = [];
-      try {
-        this.musicStream = this.$refs.music.captureStream();
-        const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-        // const audioTracks = this.audioStream.getAudioTracks();
-        const musicTracks = this.musicStream.getAudioTracks();
-
-        this.combinedStream = new MediaStream([...musicTracks, ...audioStream.getTracks()]);
-
-        this.mediaRecorder = new MediaRecorder(this.combinedStream);
-        this.mediaRecorder.ondataavailable = event => {
-          if (event.data.size > 0) {
-            this.recordedChunks.push(event.data);
-          }
-        };
-        this.mediaRecorder.onstop = this.saveRecording;
-        this.mediaRecorder.start();
-        this.$refs.music.play();
-      } catch (err) {
-        console.error("Error accessing streams: ", err);
+      if (this.audioContext) {
+        this.audioContext.close();
       }
-    },
-    stopMusicRecording() {
-      this.isMusicRecording = false;
-      if (this.mediaRecorder) {
-        this.mediaRecorder.stop();
-      }
-      this.$refs.music.pause();
     }
-  },
+  }
 };
 </script>
 
-<style scoped>
-video {
-  border: 1px solid black;
-}
+<style>
 </style>
