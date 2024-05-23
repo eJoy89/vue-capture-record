@@ -12,6 +12,7 @@
             </div>
         </div>
         <input type="range" min="0" max="2" step="0.1" v-model="microphoneGain" @input="updateMicrophoneGain">
+        {{ microphoneStream }}
 
     </section>
 </template>
@@ -53,10 +54,12 @@ export default {
 
                 this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
+                // create Video Source
                 const videoElement = this.$refs.videoPlayback;
                 const videoAudioSource = this.audioContext.createMediaElementSource(videoElement);
                 this.videoAudioStream = this.audioContext.createMediaStreamDestination();
 
+                // Create Audio Source
                 const microphoneSource = this.audioContext.createMediaStreamSource(microphoneStream);
                 
                 // Create GainNode for microphone
@@ -65,13 +68,16 @@ export default {
 
                 const mixedOutput = this.audioContext.createMediaStreamDestination();
 
+                // Merge Video and Audio
                 videoAudioSource.connect(mixedOutput);
                 microphoneSource.connect(this.microphoneGainNode).connect(mixedOutput);
 
+                // Save the Data in 'this.audioChunks'
                 this.mediaRecorder = new MediaRecorder(mixedOutput.stream);
                 this.mediaRecorder.ondataavailable = (event) => {
-                this.audioChunks.push(event.data);
+                    this.audioChunks.push(event.data);
                 };
+
                 this.mediaRecorder.onstop = this.saveRecording;
                 this.mediaRecorder.start();
                 this.isRecording = true;
