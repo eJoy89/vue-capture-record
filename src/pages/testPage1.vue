@@ -21,14 +21,14 @@
 export default {
     data() {
         return {
-        mediaRecorder: null,
-        audioChunks: [],
-        isRecording: false,
-        audioContext: null,
-        microphoneStream: null,
-        videoAudioStream: null,
-        microphoneGain: 1, 
-        microphoneGainNode: null 
+            mediaRecorder: null,
+            audioChunks: [],
+            isRecording: false,
+            audioContext: null,
+            microphoneStream: null,
+            videoAudioStream: null,
+            microphoneGain: 1, 
+            microphoneGainNode: null 
         };
     },
     methods: {
@@ -101,11 +101,6 @@ export default {
             this.audioChunks = [];
             this.cleanup();
         },
-        updateMicrophoneGain() {
-            if (this.microphoneGainNode) {
-                this.microphoneGainNode.gain.value = this.microphoneGain;
-            }
-        },
         cleanup() {
             if (this.microphoneStream) {
                 this.microphoneStream.getTracks().forEach(track => track.stop());
@@ -113,7 +108,13 @@ export default {
             if (this.audioContext) {
                 this.audioContext.close();
             }
-        }
+        },
+        updateMicrophoneGain() {
+            if (this.microphoneGainNode) {
+                this.microphoneGainNode.gain.value = this.microphoneGain;
+            }
+        },
+    
     }
 };
 </script>
