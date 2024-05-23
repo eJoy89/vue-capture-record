@@ -5,14 +5,14 @@
         </div>
 
         <div style="width: 300px; height: 300px; border: 1px solid red; display: flex; flex-direction: column; justify-content: space-between;">
-        <video ref="cameraVideo" autoplay></video>
-        <div style="width: 100%; display: flex;">
-            <button style="width: 50%;" @click="startCamera">카메라</button>
-            <button style="width: 50%;" @click="toggleRecording">{{ isRecording ? '녹음 중지' : '녹음' }}</button>
+            <video ref="cameraVideo" autoplay></video>
+            <div style="width: 100%; display: flex;">
+                <button style="width: 50%;" @click="startCamera">카메라</button>
+                <button style="width: 50%;" @click="toggleRecording">{{ isRecording ? '녹음 중지' : '녹음' }}</button>
+            </div>
         </div>
         <input type="range" min="0" max="2" step="0.1" v-model="microphoneGain" @input="updateMicrophoneGain">
-        {{ microphoneGain }}
-        </div>
+
     </section>
 </template>
 
