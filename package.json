@@ -19,6 +19,7 @@
     "selenium-webdriver": "^4.21.0",
     "vue": "^3.2.13",
     "vue-carousel": "^0.18.0",
+    "vue-router": "^4.3.2",
     "vue3-carousel": "^0.3.3"
   },
   "devDependencies": {

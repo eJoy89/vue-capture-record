@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { createManager } from '@vue-youtube/core';
 import App from './App.vue'
+import router from './router'
 
-createApp(App).use(createManager()).mount('#app')
+createApp(App).use(router).mount('#app')
