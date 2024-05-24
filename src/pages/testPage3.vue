@@ -33,24 +33,24 @@
         },
         async startRecording() {
             try {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            this.mixedOutput = this.audioContext.createMediaStreamDestination();
-            this.videoElements = [this.$refs.video1, this.$refs.video2];
-            this.audioSources = [];
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                this.mixedOutput = this.audioContext.createMediaStreamDestination();
+                this.videoElements = [this.$refs.video1, this.$refs.video2];
+                this.audioSources = [];
     
-            for (const videoElement of this.videoElements) {
-                const audioSource = this.audioContext.createMediaElementSource(videoElement);
-                this.audioSources.push(audioSource);
-                audioSource.connect(this.mixedOutput);
-                audioSource.connect(this.audioContext.destination); 
-            }
-    
-            this.mediaRecorder = new MediaRecorder(this.mixedOutput.stream);
-            this.mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    this.audioChunks.push(event.data);
+                for (const videoElement of this.videoElements) {
+                    const audioSource = this.audioContext.createMediaElementSource(videoElement);
+                    this.audioSources.push(audioSource);
+                    audioSource.connect(this.mixedOutput);
+                    audioSource.connect(this.audioContext.destination); 
                 }
-            };
+    
+                this.mediaRecorder = new MediaRecorder(this.mixedOutput.stream);
+                this.mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        this.audioChunks.push(event.data);
+                    }
+                };
                 this.mediaRecorder.onstop = this.saveRecording;
                 this.mediaRecorder.start();
                 this.isRecording = true;

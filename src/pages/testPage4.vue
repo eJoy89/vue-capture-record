@@ -1,51 +1,46 @@
 <template>
     <div>
-      <canvas id="captureHere" width="800" height="600" style="border: 1px solid black;"></canvas>
+        <canvas id="stockGraph" width="150" height="150">
+
+      <div id="captureHere" style="width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center;">
+        <div style="width: 300px; height: 300px;" :style="{background: bg1 ? 'lightBlue' : 'green'}"></div>
+        <div style="width: 100px; height: 100px;" :style="{background: bg2 ? 'pink' : 'black'}"></div>
+      </div>
       <button @click="toggleRecording">{{ isRecording ? 'Stop Recording' : 'Start Recording' }}</button>
+    
+    </canvas>
     </div>
   </template>
   
   <script>
+  import html2canvas from 'html2canvas';
+  
   export default {
     data() {
       return {
+        bg1: true,
+        bg2: true,
         isRecording: false,
         mediaRecorder: null,
-        recordedChunks: [],
-        context: null,
-        intervalId: null,
-        colorToggle: true,
+        recordedChunks: []
       }
     },
     mounted() {
-      const canvas = document.getElementById('captureHere');
-      this.context = canvas.getContext('2d');
-      this.startDrawing();
+      setInterval(() => {
+        this.bg1 = !this.bg1;
+        this.bg2 = !this.bg2;
+      }, 1000);
     },
     methods: {
-      startDrawing() {
-        this.intervalId = setInterval(() => {
-          this.colorToggle = !this.colorToggle;
-          this.context.fillStyle = this.colorToggle ? 'lightBlue' : 'green';
-          this.context.fillRect(0, 0, 800, 600);
-  
-          this.context.fillStyle = this.colorToggle ? 'pink' : 'black';
-          this.context.fillRect(50, 50, 100, 100);
-        }, 1000);
-      },
-      stopDrawing() {
-        clearInterval(this.intervalId);
-      },
       async toggleRecording() {
         if (this.isRecording) {
           this.mediaRecorder.stop();
-          this.stopDrawing();
         } else {
           this.recordedChunks = [];
-          const canvas = document.getElementById('captureHere');
+          const canvas = await html2canvas(document.getElementById('captureHere'));
           const stream = canvas.captureStream();
           this.mediaRecorder = new MediaRecorder(stream, {
-            mimeType: 'video/webm'
+            mimeType: 'video/webm; codecs=vp9'
           });
   
           this.mediaRecorder.ondataavailable = (event) => {
@@ -56,7 +51,6 @@
   
           this.mediaRecorder.onstop = this.handleStop;
           this.mediaRecorder.start();
-          this.startDrawing();
         }
         this.isRecording = !this.isRecording;
       },
@@ -70,15 +64,12 @@
         document.body.appendChild(a);
         a.click();
         URL.revokeObjectURL(url);
-  
-        this.$refs.recordedVideo.src = url;
-        this.$refs.recordedVideo.style.display = 'block';
-        this.$refs.recordedVideo.play();
       }
     }
   }
   </script>
   
   <style>
+  
   </style>
   
