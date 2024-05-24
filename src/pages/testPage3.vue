@@ -48,14 +48,14 @@
             this.mediaRecorder = new MediaRecorder(this.mixedOutput.stream);
             this.mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) {
-                this.audioChunks.push(event.data);
+                    this.audioChunks.push(event.data);
                 }
             };
-            this.mediaRecorder.onstop = this.saveRecording;
-            this.mediaRecorder.start();
-            this.isRecording = true;
+                this.mediaRecorder.onstop = this.saveRecording;
+                this.mediaRecorder.start();
+                this.isRecording = true;
             } catch (error) {
-            console.error('Error accessing the audio', error);
+                console.error('Error accessing the audio', error);
             }
         },
         stopRecording() {
@@ -72,7 +72,7 @@
             link.click();
             document.body.removeChild(link);
             this.audioChunks = [];
-            this.cleanup();
+            // this.cleanup();
         },
         cleanup() {
             if (this.audioContext) {

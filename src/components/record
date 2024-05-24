@@ -85,3 +85,85 @@ export default {
 
 <style>
 </style>
+
+
+
+
+
+
+
+
+
+
+
+------------------<template>
+  <div>
+    <video ref="videoPlayer" style="width: 200px; height: 200px;" src="@/assets/audioTest.mp4" controls autoplay></video>
+    <button @click="startRecording">Start Recording</button>
+    <button @click="stopRecording">Stop Recording</button>
+    <a v-if="audioURL" :href="audioURL" download="recording.webm">Download Recording</a>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      mediaRecorder: null,
+      recordedChunks: [],
+      audioURL: null
+    };
+  },
+  methods: {
+    async startRecording() {
+      const videoElement = this.$refs.videoPlayer;
+
+      if (videoElement.captureStream) {
+        try {
+          // Get video stream
+          const videoStream = videoElement.captureStream();
+          
+          // Get audio stream from microphone
+          const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+          // Combine video and audio streams
+          const combinedStream = new MediaStream();
+          videoStream.getTracks().forEach(track => combinedStream.addTrack(track));
+          audioStream.getTracks().forEach(track => combinedStream.addTrack(track));
+
+          // Create MediaRecorder with the combined stream
+          this.mediaRecorder = new MediaRecorder(combinedStream);
+
+          this.mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              this.recordedChunks.push(event.data);
+            }
+          };
+
+          this.mediaRecorder.start();
+        } catch (err) {
+          console.error("Error accessing media devices", err);
+        }
+      } else {
+        console.error("captureStream() not supported.");
+      }
+    },
+    stopRecording() {
+      if (this.mediaRecorder) {
+        this.mediaRecorder.stop();
+        this.mediaRecorder.onstop = () => {
+          const blob = new Blob(this.recordedChunks, { type: 'audio/webm' });
+          this.audioURL = URL.createObjectURL(blob);
+        };
+      }
+    }
+  }
+};
+</script>
+
+<style>
+button {
+  display: block;
+  margin: 10px 0;
+}
+</style>
