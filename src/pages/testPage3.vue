@@ -33,7 +33,10 @@
         },
         async startRecording() {
             try {
+                // AudioContext
+                // AudioContext 내에서는 각각의 AudioNode 들로 소리를 제어하게 되는데, 크게 Inputs(입력), Effects(수정), Destination(출력)로 나눌 수 있다.
                 this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                //createMediaStreamDestination는 MediaStream 객체로 캡처하는 데 사용
                 this.mixedOutput = this.audioContext.createMediaStreamDestination();
                 this.videoElements = [this.$refs.video1, this.$refs.video2];
                 this.audioSources = [];
