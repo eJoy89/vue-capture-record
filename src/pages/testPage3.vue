@@ -75,12 +75,12 @@
             // this.cleanup();
         },
         cleanup() {
-            if (this.audioContext) {
-                this.audioContext.close();
-            }
+            // if (this.audioContext) {
+            //     this.audioContext.close();
+            // }
         }
-        }
-    };
+    }
+};
 </script>
 
 <style>
